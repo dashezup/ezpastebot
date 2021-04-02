@@ -82,16 +82,6 @@ async def answer(_, iq: InlineQuery):
     )
 
 
-"""
-@Client.on_callback_query()
-async def upload_paste(client, callback_query):
-    await callback_query.answer(
-        f"Button contains: '{callback_query.data}'",
-        show_alert=True
-    )
-"""
-
-
 @Client.on_message(filters.private & filters.regex('^/start from_inline$'))
 async def receive_private_message(_, m: Message):
     await m.reply_text(ASK_TO_SEND_PASTE, reply_markup=ForceReply())
@@ -99,8 +89,9 @@ async def receive_private_message(_, m: Message):
 
 @Client.on_message(filters.private & answer_with_paste)
 async def reply_with_text(_, m: Message):
-    paste_content = m.text
-    url = await ezpaste(paste_content)
+    url = await ezpaste(m)
+    if not url:
+        return
     share_url = (
         f"https://t.me/share/url?url={url}"
         "&text=%E2%80%94%20__Pasted%20with__"

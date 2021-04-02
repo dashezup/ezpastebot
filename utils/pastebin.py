@@ -1,7 +1,19 @@
+import os
 import socket
+from pyrogram.types import Message
 
 
-async def ezpaste(content):
+async def ezpaste(m: Message):
+    if m.document and 0 < m.document.file_size <= 102400 \
+            and m.document.mime_type.split('/')[0] == "text":
+        filename = await m.download()
+        with open(filename) as f:
+            content = f.read()
+        os.remove(filename)
+    elif m.text:
+        content = m.text
+    else:
+        return None
     url = await _netcat('ezup.dev', 9999, content)
     return url
 
