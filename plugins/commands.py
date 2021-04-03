@@ -58,7 +58,7 @@ async def start(_, m: Message):
         "- reply to a text message or text file with /paste in private "
         "or groups (feel free to add this bot to your groups, it has "
         "privacy mode enabled so it does not read your chat history\n\n"
-        "You can upload up to 100K each paste",
+        "You can upload up to 1 megabytes of text on each paste",
         reply_markup=InlineKeyboardMarkup(
             [
                 [

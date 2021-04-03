@@ -4,7 +4,7 @@ from pyrogram.types import Message
 
 
 async def ezpaste(m: Message):
-    if m.document and 0 < m.document.file_size <= 102400 \
+    if m.document and 0 < m.document.file_size <= 1048576 \
             and m.document.mime_type.split('/')[0] == "text":
         filename = await m.download()
         with open(filename) as f:
