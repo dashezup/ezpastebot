@@ -37,6 +37,10 @@ async def paste(_, m: Message):
                     InlineKeyboardButton(
                         "Share",
                         url=share_url
+                    ),
+                    InlineKeyboardButton(
+                        "Inline",
+                        switch_inline_query=url
                     )
                 ]
             ]
@@ -58,7 +62,11 @@ async def start(_, m: Message):
         "- reply to a text message or text file with /paste in private "
         "or groups (feel free to add this bot to your groups, it has "
         "privacy mode enabled so it does not read your chat history\n\n"
-        "You can upload up to 1 megabytes of text on each paste",
+        "You can upload up to 1 megabytes of text on each paste\n\n"
+        "[Source Code](https://github.com/dashezup/ezpastebot)"
+        " | [Developer](https://t.me/dashezup)"
+        " | [Support Chat](https://t.me/ezupdev)",
+        disable_web_page_preview=True,
         reply_markup=InlineKeyboardMarkup(
             [
                 [

@@ -48,6 +48,10 @@ async def answer(_, iq: InlineQuery):
                                 InlineKeyboardButton(
                                     "Share",
                                     url=share_url
+                                ),
+                                InlineKeyboardButton(
+                                    "Inline",
+                                    switch_inline_query=url
                                 )
                             ]
                         ]
@@ -65,6 +69,10 @@ async def answer(_, iq: InlineQuery):
                                 InlineKeyboardButton(
                                     "Share",
                                     url=share_url
+                                ),
+                                InlineKeyboardButton(
+                                    "Inline",
+                                    switch_inline_query=url
                                 )
                             ]
                         ]

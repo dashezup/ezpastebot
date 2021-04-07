@@ -55,6 +55,10 @@ async def upload_paste(_, cq: CallbackQuery):
                     InlineKeyboardButton(
                         "Share",
                         url=share_url
+                    ),
+                    InlineKeyboardButton(
+                        "Inline",
+                        switch_inline_query=url
                     )
                 ]
             ]
