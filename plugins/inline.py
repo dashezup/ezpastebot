@@ -127,7 +127,12 @@ async def reply_with_text(_, m: Message):
                     InlineKeyboardButton(
                         "Share",
                         url=share_url
+                    ),
+                    InlineKeyboardButton(
+                        "Inline",
+                        switch_inline_query=url
                     )
+
                 ]
             ]
         )
