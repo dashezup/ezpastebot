@@ -4,6 +4,7 @@ from pyrogram.types import (InlineQuery, Message,
                             InlineKeyboardMarkup, InlineKeyboardButton,
                             InlineQueryResultPhoto,
                             ForceReply)
+
 from utils.pastebin import ezpaste
 
 ASK_TO_SEND_PASTE = "Send paste"
@@ -14,6 +15,7 @@ async def answer_with_paste_filter(_, __, m: Message):
     if reply and reply.from_user.is_self and reply.text == ASK_TO_SEND_PASTE:
         return True
     return False
+
 
 answer_with_paste = filters.create(answer_with_paste_filter)
 

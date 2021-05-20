@@ -1,6 +1,9 @@
 # vim
 [._]*.sw[a-p]
 
+# Pycharm
+/.idea/
+
 # python
 /venv/
 __pycache__/

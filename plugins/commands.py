@@ -1,6 +1,8 @@
 import asyncio
+
 from pyrogram import Client, filters, emoji
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+
 from utils.pastebin import ezpaste
 
 DELETE_DELAY = 6
