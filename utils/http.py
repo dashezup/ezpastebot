@@ -1,38 +1,4 @@
-# Ezpaste Bot
-
-A Telegram bot for uploading pastes to https://ezup.dev/p/
-
-## Requirements
-
-- Python 3.6 or higher
-- A [Telegram API key](https://docs.pyrogram.org/intro/setup#api-keys)
-- A [Telegram bot token](https://t.me/botfather)
-
-## Run
-
-Create a new `config.ini` file, copy-paste the following and replace the value
-with your own.
-
-```
-[pyrogram]
-api_id = 1234567
-api_hash = 0123456789abcdef0123456789abcdef
-bot_token = 123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
-```
-
-Run the bot
-
-```
-virtualenv venv
-venv/bin/pip install -U -r requirements.txt
-venv/bin/python bot.py
-```
-
-## License
-
-AGPL-3.0-or-later
-
-```
+"""
 ezpastebot, Telegram pastebin bot for https://ezup.dev/p/
 Copyright (C) 2021  Dash Eclipse
 
@@ -48,4 +14,15 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-```
+"""
+import asyncio
+
+from aiohttp import ClientSession
+
+
+async def get_session() -> ClientSession:
+    return ClientSession()
+
+
+session: ClientSession \
+    = asyncio.get_event_loop().run_until_complete(get_session())

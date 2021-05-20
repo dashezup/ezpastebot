@@ -15,11 +15,31 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import asyncio
+
 from pyrogram import Client, idle
 
-app = Client("ezpastebot")
-app.start()
-print('>>> BOT STARTED')
-idle()
-app.stop()
-print('\n>>> BOT STOPPED')
+from utils.http import session
+
+plugins = dict(
+    root="plugins",
+    include=[
+        "commands",
+        "inline",
+        "private_non_reply"
+    ]
+)
+
+
+async def main():
+    app = Client("ezpastebot", plugins=plugins)
+    await app.start()
+    print('>>> BOT STARTED')
+    await idle()
+    await session.close()
+    print('\n>>> BOT STOPPED')
+
+
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(main())

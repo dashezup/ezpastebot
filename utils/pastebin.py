@@ -15,13 +15,20 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import asyncio
 import os
 import socket
+from typing import Optional
 
 from pyrogram.types import Message
 
+from utils.http import session
 
-async def ezpaste(m: Message):
+HTTP_MAX_ATTEMPT = 5
+HTTP_TIMEOUT = 2
+
+
+async def ezpaste(m: Message) -> Optional[str]:
     if m.document and 0 < m.document.file_size <= 1048576 \
             and m.document.mime_type.split('/')[0] == "text":
         filename = await m.download()
@@ -33,7 +40,8 @@ async def ezpaste(m: Message):
     else:
         return None
     url = await _netcat('ezup.dev', 9999, content)
-    return url
+    valid_preview = await validate_ezpaste_preview(url)
+    return url if valid_preview else None
 
 
 async def _netcat(host, port, content):
@@ -47,3 +55,19 @@ async def _netcat(host, port, content):
             break
         return data
     s.close()
+
+
+async def validate_ezpaste_preview(url: str) -> bool:
+    preview_url = f"{url}/preview.png"
+    for _ in range(HTTP_MAX_ATTEMPT):
+        try:
+            async with session.head(preview_url, timeout=HTTP_TIMEOUT) as resp:
+                status = resp.status
+                content_length = resp.content_length
+        except asyncio.exceptions.TimeoutError:
+            return False
+        if status == 404 or (status == 200 and content_length == 0):
+            await asyncio.sleep(0.4)
+        else:
+            return True if status == 200 else False
+    return False
