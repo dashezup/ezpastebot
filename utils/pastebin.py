@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import asyncio
 import os
+import re
 import socket
 from typing import Optional
 
@@ -27,10 +28,12 @@ from utils.http import session
 HTTP_MAX_ATTEMPT = 5
 HTTP_TIMEOUT = 2
 
+pattern = re.compile(r'^text/|json$|yaml$|xml$|toml$')
+
 
 async def ezpaste(m: Message) -> Optional[str]:
     if m.document and 0 < m.document.file_size <= 1048576 \
-            and m.document.mime_type.split('/')[0] == "text":
+            and pattern.search(m.document.mime_type):
         filename = await m.download()
         with open(filename) as f:
             content = f.read()
