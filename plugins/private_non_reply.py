@@ -32,7 +32,7 @@ reply_filter = filters.create(lambda _, __, m: m.reply_to_message)
     filters.private
     & (filters.document | filters.text)
     & ~reply_filter
-    & ~filters.regex("^/")
+    & ~filters.regex(r"^\/")
 )
 async def ask_to_paste(_, m: Message):
     await m.reply_text(
@@ -55,9 +55,9 @@ async def ask_to_paste(_, m: Message):
     )
 
 
-@Client.on_callback_query(filters.regex("^yes_upload_paste"))
+@Client.on_callback_query(filters.regex(r"^yes_upload_paste$"))
 async def upload_paste(_, cq: CallbackQuery):
-    url = await ezpaste(cq.message.reply_to_message)
+    url, _ = await ezpaste(cq.message.reply_to_message)
     if not url:
         return
     share_url = (
@@ -84,6 +84,6 @@ async def upload_paste(_, cq: CallbackQuery):
     )
 
 
-@Client.on_callback_query(filters.regex("^ignore"))
+@Client.on_callback_query(filters.regex(r"^ignore_paste$"))
 async def ignore(_, cq: CallbackQuery):
     await cq.message.delete()

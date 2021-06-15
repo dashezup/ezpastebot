@@ -19,7 +19,7 @@ import asyncio
 import os
 import re
 import socket
-from typing import Optional
+from typing import Optional, Tuple
 
 from pyrogram.types import Message
 
@@ -27,12 +27,13 @@ from utils.http import session
 
 HTTP_MAX_ATTEMPT = 5
 HTTP_TIMEOUT = 2
+MAX_PASTE_SIZE = 1 * 1024 * 1024
 
 pattern = re.compile(r'^text/|json$|yaml$|xml$|toml$')
 
 
-async def ezpaste(m: Message) -> Optional[str]:
-    if m.document and 0 < m.document.file_size <= 1048576 \
+async def ezpaste(m: Message) -> Tuple[Optional[str], Optional[str]]:
+    if m.document and 0 < m.document.file_size <= MAX_PASTE_SIZE \
             and pattern.search(m.document.mime_type):
         filename = await m.download()
         with open(filename) as f:
@@ -41,10 +42,10 @@ async def ezpaste(m: Message) -> Optional[str]:
     elif m.text:
         content = m.text
     else:
-        return None
-    url = await _netcat('ezup.dev', 9999, content)
-    valid_preview = await validate_ezpaste_preview(url)
-    return url if valid_preview else None
+        return None, None
+    paste_url = await _netcat('ezup.dev', 9999, content)
+    preview_url = await get_preview_url(paste_url)
+    return paste_url, preview_url
 
 
 async def _netcat(host, port, content):
@@ -60,7 +61,7 @@ async def _netcat(host, port, content):
     s.close()
 
 
-async def validate_ezpaste_preview(url: str) -> bool:
+async def get_preview_url(url: str, try_once=False) -> Optional[str]:
     preview_url = f"{url}/preview.png"
     for _ in range(HTTP_MAX_ATTEMPT):
         try:
@@ -68,9 +69,11 @@ async def validate_ezpaste_preview(url: str) -> bool:
                 status = resp.status
                 content_length = resp.content_length
         except asyncio.exceptions.TimeoutError:
-            return False
+            return None
+        if try_once:
+            return preview_url if status == 200 else None
         if status == 404 or (status == 200 and content_length == 0):
             await asyncio.sleep(0.4)
         else:
-            return True if status == 200 else False
-    return False
+            return preview_url if status == 200 else None
+    return None

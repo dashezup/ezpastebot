@@ -15,6 +15,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from typing import List, Union
+
 from pyrogram import Client, filters
 from pyrogram.types import (InlineQuery, Message,
                             InlineQueryResultArticle, InputTextMessageContent,
@@ -22,7 +24,7 @@ from pyrogram.types import (InlineQuery, Message,
                             InlineQueryResultPhoto,
                             ForceReply)
 
-from utils.pastebin import ezpaste
+from utils.pastebin import ezpaste, get_preview_url
 
 ASK_TO_SEND_PASTE = "Send paste"
 
@@ -41,63 +43,9 @@ answer_with_paste = filters.create(answer_with_paste_filter)
 async def answer(_, iq: InlineQuery):
     query = iq.query
     if query.startswith('https://ezup.dev/p/') and len(query) == 25:
-        url = query
-        url_raw = f"{query}/index.txt"
-        paste_id = url[19:]
-        paste_info = f"ezpaste: [{paste_id}]({url}) | [raw]({url_raw})"
-        share_url = (
-            f"https://t.me/share/url?url={url}"
-            "&text=%E2%80%94%20__Pasted%20with__"
-            "%20%F0%9F%A4%96%20%40ezpastebot"
-        )
-        preview_image_url = f"{url}/preview.png"
+        iq_results = await make_iq_results(query)
         await iq.answer(
-            results=[
-                InlineQueryResultArticle(
-                    title="Send URL of this paste",
-                    input_message_content=InputTextMessageContent(
-                        paste_info
-                    ),
-                    url=url,
-                    description="A paste on ezup.dev/p",
-                    thumb_url=preview_image_url,
-                    reply_markup=InlineKeyboardMarkup(
-                        [
-                            [
-                                InlineKeyboardButton(
-                                    "Share",
-                                    url=share_url
-                                ),
-                                InlineKeyboardButton(
-                                    "Inline",
-                                    switch_inline_query=url
-                                )
-                            ]
-                        ]
-                    )
-                ),
-                InlineQueryResultPhoto(
-                    photo_url=preview_image_url,
-                    thumb_url=preview_image_url,
-                    title="Send preview image of this paste",
-                    description="up to the first 79 lines of the paste",
-                    caption=paste_info,
-                    reply_markup=InlineKeyboardMarkup(
-                        [
-                            [
-                                InlineKeyboardButton(
-                                    "Share",
-                                    url=share_url
-                                ),
-                                InlineKeyboardButton(
-                                    "Inline",
-                                    switch_inline_query=url
-                                )
-                            ]
-                        ]
-                    )
-                )
-            ],
+            results=iq_results,
             cache_time=1
         )
         return
@@ -109,14 +57,77 @@ async def answer(_, iq: InlineQuery):
     )
 
 
-@Client.on_message(filters.private & filters.regex('^/start from_inline$'))
+async def make_iq_results(url: str) -> List[Union[InlineQueryResultArticle,
+                                                  InlineQueryResultPhoto]]:
+    preview_url = await get_preview_url(url)
+    url_raw = f"{url}/index.txt"
+    paste_id = url[19:]
+    paste_info = f"ezpaste: [{paste_id}]({url}) | [raw]({url_raw})"
+    share_url = (
+        f"https://t.me/share/url?url={url}"
+        "&text=%E2%80%94%20__Pasted%20with__"
+        "%20%F0%9F%A4%96%20%40ezpastebot"
+    )
+    results = [
+        InlineQueryResultArticle(
+            title="Send URL of this paste",
+            input_message_content=InputTextMessageContent(
+                paste_info
+            ),
+            url=url,
+            description="A paste on ezup.dev/p",
+            thumb_url=preview_url,
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            "Share",
+                            url=share_url
+                        ),
+                        InlineKeyboardButton(
+                            "Inline",
+                            switch_inline_query=url
+                        )
+                    ]
+                ]
+            )
+        )
+    ]
+    if preview_url:
+        results.append(
+            InlineQueryResultPhoto(
+                photo_url=preview_url,
+                thumb_url=preview_url,
+                title="Send preview image of this paste",
+                description="up to the first 79 lines of the paste",
+                caption=paste_info,
+                reply_markup=InlineKeyboardMarkup(
+                    [
+                        [
+                            InlineKeyboardButton(
+                                "Share",
+                                url=share_url
+                            ),
+                            InlineKeyboardButton(
+                                "Inline",
+                                switch_inline_query=url
+                            )
+                        ]
+                    ]
+                )
+            )
+        )
+    return results
+
+
+@Client.on_message(filters.private & filters.regex(r'^\/start from_inline$'))
 async def receive_private_message(_, m: Message):
     await m.reply_text(ASK_TO_SEND_PASTE, reply_markup=ForceReply())
 
 
 @Client.on_message(filters.private & answer_with_paste)
 async def reply_with_text(_, m: Message):
-    url = await ezpaste(m)
+    url, _ = await ezpaste(m)
     if not url:
         return
     share_url = (

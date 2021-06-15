@@ -33,7 +33,7 @@ async def _delay_delete_message(m: Message):
 @Client.on_message(
     (filters.group | filters.private)
     & ~filters.edited
-    & filters.regex('^\\/paste(@ezpastebot|)$')
+    & filters.regex(r'^\/paste(@ezpastebot|)$')
 )
 async def paste(_, m: Message):
     reply = m.reply_to_message
@@ -47,7 +47,7 @@ async def paste(_, m: Message):
         )
         await _delay_delete_message(response)
         return
-    url = await ezpaste(reply)
+    url, _ = await ezpaste(reply)
     if not url:
         await m.reply_text("Invalid", quote=True)
         return
@@ -77,7 +77,7 @@ async def paste(_, m: Message):
 
 
 @Client.on_message(filters.private
-                   & filters.regex('^\\/start$')
+                   & filters.regex(r'^\/start$')
                    & ~filters.edited)
 async def start(_, m: Message):
     await m.reply_text(
